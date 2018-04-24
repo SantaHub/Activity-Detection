@@ -6,6 +6,8 @@ Created on Sat Dec  9 21:55:23 2017
 @author: austin
 """
 #Inside Docker deb /home/ActivityDetect
+# cd /home/austin/ML/MotionDetection
+
 
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
@@ -34,10 +36,11 @@ def plot_cm(clf, labels = ['b1', 'b2', 'cycl', 'ly', 'sit', 'stand', 'walk']) :
     cm  = confusion_matrix(y, clf['y_pred'])
     percent = (cm*100.0)/np.array(np.matrix(cm.sum(axis=1)).T) 
     print ('\nConfusion Matrix Stats : ',clf['name'],clf['acc'],'%')
-    for i, label_i in enumerate(labels):
-        for j, label_j in enumerate(labels):
-            print ("%s/%s: %.2f%% (%d/%d)" % (label_i, label_j, (percent[i][j]), cm[i][j], cm[i].sum()))
-            
+
+#    for i, label_i in enumerate(labels):
+#        for j, label_j in enumerate(labels):
+#            print ("%s/%s: %.2f%% (%d/%d)" % (label_i, label_j, (percent[i][j]), cm[i][j], cm[i].sum()))
+    
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.grid(b=False)
@@ -48,17 +51,20 @@ def plot_cm(clf, labels = ['b1', 'b2', 'cycl', 'ly', 'sit', 'stand', 'walk']) :
     ax.set_yticklabels([' '] + labels)
     for x,Y in enumerate(percent):
         for a,b in enumerate(Y):
+            if b < 1:
+                continue 
+            b = round(b,2)
             ax.text(x,a,b,va='center',ha='center',bbox=dict(fc='w',boxstyle='round,pad=1'))
             
     pylab.xlabel('Predicted')
     pylab.ylabel('Actual')
-    pylab.savefig('./'+clf['name']+'.png')
+    pylab.savefig('./Results/'+clf['name']+'.png')
     pylab.show()
 
 
 
 import pandas as pd
-all_data = pd.read_csv('data.csv')
+all_data = pd.read_csv('data/data.csv')
 
 activities = set(all_data['activity'])
 
@@ -80,10 +86,16 @@ dataX = data.as_matrix().astype(np.float)
 datay = data['activity']
 y = np.array(datay)
 
+from sklearn.preprocessing import MultiLabelBinarizer,LabelEncoder
+enc = MultiLabelBinarizer()
+y_train = enc.fit_transform(y_train)
+
+
 
 from sklearn import preprocessing
 scaler = preprocessing.StandardScaler()
 X = scaler.fit_transform(dataX) #features made unit varient
+
 
 from sklearn import ensemble
 from sklearn import naive_bayes
@@ -94,15 +106,15 @@ from sklearn.multiclass import OneVsRestClassifier
 GNB=stratified_cv(X, y, naive_bayes.GaussianNB,"Gaussian NB ") #Accuracy 87.66
 RFC=stratified_cv(X, y, ensemble.RandomForestClassifier, "Random Forest Classifier",max_depth=4)  #accuracy  99.0347
 KNC=stratified_cv(X, y, neighbors.KNeighborsClassifier,"K Neighbors Classifier") #accuracy 94.33
-LSV= stratified_cv(X, y, LinearSVC,"Linear Support Vector Classification") #accuracy 97.68
+LSV= stratified_cv(X, y, LinearSVC,"Linear SVC") #accuracy 97.68
 #
 ##Plot Confusion Matrix
-#plot_cm(GNB)
-#plot_cm(RFC)
-#plot_cm(KNC)
-#plot_cm(LSV)
+plot_cm(GNB)
+plot_cm(RFC)
+plot_cm(KNC)
+plot_cm(LSV)
 #
 #
 ##Plot Classifier compare
-#plot_clf_cmpr([GNB,RFC,KNC,LSV])
+plot_clf_cmpr([GNB,RFC,KNC,LSV])
 
