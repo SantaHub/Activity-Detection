@@ -109,7 +109,10 @@ KNC=stratified_cv(X, y, neighbors.KNeighborsClassifier,"K Neighbors Classifier")
 LSV= stratified_cv(X, y, LinearSVC,"Linear SVC") #accuracy 97.68
 #
 ##Plot Confusion Matrix
-+
+plot_cm(GNB)
+plot_cm(RFC)
+plot_cm(KNC)
+plot_cm(LSV)
 #
 #
 ##Plot Classifier compare
